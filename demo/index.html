@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WÅHLBERG ARCHIVE — Premium Overshirts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#141414;
+      --muted:#8a8578;
+      --line:#e9e5dc;
+      --cream:#faf9f6;
+      --card:#ffffff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:"Inter",system-ui,sans-serif;
+      color:var(--ink); background:var(--cream); line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+    }
+    a{color:inherit;text-decoration:none}
+
+    header{
+      position:sticky; top:0; z-index:20; background:rgba(250,249,246,.94);
+      backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+    }
+    .bar{
+      max-width:1100px; margin:0 auto; padding:18px 28px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .wordmark{
+      font-size:15px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase;
+    }
+    nav{display:flex; gap:26px; font-size:13px; letter-spacing:0.06em; color:var(--muted)}
+    nav a:hover{color:var(--ink)}
+
+    .hero{
+      max-width:1100px; margin:0 auto; padding:110px 28px 90px; text-align:center;
+    }
+    .hero .kicker{
+      font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted);
+      margin-bottom:22px;
+    }
+    .hero h1{
+      font-family:"Cormorant Garamond",serif; font-weight:500;
+      font-size:clamp(38px,6vw,64px); line-height:1.08; letter-spacing:0.01em;
+    }
+    .hero p{margin:22px auto 0; max-width:520px; font-size:15.5px; color:var(--muted)}
+
+    .grid{
+      max-width:1100px; margin:0 auto; padding:0 28px 90px;
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:22px;
+    }
+    .product{
+      background:var(--card); border:1px solid var(--line); border-radius:4px;
+      overflow:hidden; transition:transform .25s ease, box-shadow .25s ease;
+      opacity:0; transform:translateY(14px);
+    }
+    .product.in{opacity:1; transform:none; transition:opacity .5s ease, transform .5s ease}
+    .product:hover{transform:translateY(-3px); box-shadow:0 14px 34px rgba(20,20,20,.08)}
+    .swatch{height:300px; position:relative}
+    .swatch::after{
+      content:""; position:absolute; inset:0;
+      background:linear-gradient(160deg, rgba(255,255,255,.24), rgba(0,0,0,.07) 70%);
+    }
+    .swatch .tag{
+      position:absolute; top:14px; left:14px; z-index:1;
+      font-size:10px; letter-spacing:0.18em; text-transform:uppercase;
+      background:rgba(20,20,20,.85); color:#fff; padding:5px 10px; border-radius:2px;
+    }
+    .p-cream .swatch{background:#e8e0cf}
+    .p-khaki .swatch{background:#8a8265}
+    .p-navy .swatch{background:#232c3d}
+    .p-info{padding:20px 22px 24px}
+    .p-info h3{font-size:14px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase}
+    .p-info .price{margin-top:6px; font-size:14px; color:var(--muted)}
+    .p-info .price s{margin-right:8px; opacity:.65}
+    .p-info .meta{margin-top:10px; font-size:12.5px; color:var(--muted)}
+
+    .strip{
+      border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+      background:var(--card);
+    }
+    .strip-inner{
+      max-width:1100px; margin:0 auto; padding:34px 28px;
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:22px;
+      font-size:13px; color:var(--muted); text-align:center;
+    }
+    .strip b{display:block; color:var(--ink); font-size:13px; letter-spacing:0.08em;
+      text-transform:uppercase; margin-bottom:4px}
+
+    .closing{max-width:760px; margin:0 auto; padding:84px 28px 120px; text-align:center}
+    .closing .hint{
+      font-size:15px; color:var(--muted); background:var(--card);
+      border:1px solid var(--line); border-radius:6px; padding:22px 26px; text-align:left;
+    }
+    .closing .hint b{color:var(--ink)}
+    .demo-tag{
+      margin-top:30px; font-family:"SF Mono","JetBrains Mono",monospace;
+      font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:#c2bcae;
+    }
+
+    footer{
+      border-top:1px solid var(--line); padding:30px 28px; text-align:center;
+      font-size:12px; color:var(--muted); letter-spacing:0.05em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <a class="wordmark" href="#">Wåhlberg Archive</a>
+      <nav>
+        <a href="#shop">Shop</a>
+        <a href="#shipping">Shipping</a>
+        <a href="#returns">Returns</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="kicker">Scandinavian essentials · Trondheim, Norway</div>
+    <h1>Premium overshirts,<br>built to outlast trends.</h1>
+    <p>Heavyweight 400&nbsp;gsm cotton twill. Hand-selected finishing touches.
+       Shipped worldwide from Norway.</p>
+  </section>
+
+  <div class="grid" id="shop">
+    <div class="product p-cream">
+      <div class="swatch"></div>
+      <div class="p-info">
+        <h3>Cream Overshirt</h3>
+        <div class="price">1 499,00 kr</div>
+        <div class="meta">100% cotton twill · 400 gsm · S / M / L</div>
+      </div>
+    </div>
+    <div class="product p-khaki">
+      <div class="swatch"></div>
+      <div class="p-info">
+        <h3>Khaki Overshirt</h3>
+        <div class="price">1 499,00 kr</div>
+        <div class="meta">100% cotton twill · 400 gsm · S / M / L</div>
+      </div>
+    </div>
+    <div class="product p-navy">
+      <div class="swatch"><span class="tag">Sale</span></div>
+      <div class="p-info">
+        <h3>Navy Overshirt</h3>
+        <div class="price"><s>1 499,00 kr</s>1 299,00 kr</div>
+        <div class="meta">100% cotton twill · 400 gsm · S / M / L</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="strip-inner">
+      <div id="shipping"><b>Worldwide shipping</b>DDP where available — duties prepaid</div>
+      <div id="returns"><b>14-day returns</b>Right of withdrawal, Norway/EU</div>
+      <div id="contact"><b>Secure payment</b>Vipps · Klarna · PayPal · Apple Pay</div>
+    </div>
+  </div>
+
+  <section class="closing">
+    <p class="hint">
+      Ask the chat in the bottom-right corner anything a customer would —
+      e.g. <b>&ldquo;Does size M fit if I&rsquo;m 180&nbsp;cm?&rdquo;</b> or
+      <b>&ldquo;How do returns work?&rdquo;</b> It answers instantly, in Norwegian or
+      English — and hands over to team@wahlbergarchive.com whenever a human is needed.
+      Try to break it if you can.
+    </p>
+    <div class="demo-tag">Live demo · Dietrichs Marketing</div>
+  </section>
+
+  <footer>© Wåhlberg Archive AS · Trondheim, Norway · team@wahlbergarchive.com</footer>
+
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('in'),i*90);io.unobserve(e.target)}})},{threshold:.15});
+    document.querySelectorAll('.product').forEach(c=>io.observe(c));
+  </script>
+
+  <!-- DM chat-widget — samme origin som denne siden (serveres av backend) -->
+  <script async src="https://dm-b2j3i22sna-lz.a.run.app/widget/voltio-widget.js"
+          data-tenant-key="voltio_yQVQyKF1gG2eFMlev7nFeoTOael972BL"
+          data-color="#141414"
+          data-title="Wåhlberg Archive"
+          data-subtitle="We're happy to help"
+          data-language="en"
+          data-suggestions="Does size M fit if I'm 180 cm?|Where is my order?|How do returns work?|When will my pre-order ship?"></script>
+</body>
+</html>

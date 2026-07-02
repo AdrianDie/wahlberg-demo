@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
   <style>
-    :root{ --ink:#141414; --muted:#8a8578; --line:#e9e5dc; --cream:#f6f3ec; --brand:#141414; }
+    :root{ --ink:#141414; --muted:#8a8578; --line:#e9e5dc; --cream:#faf9f6; --brand:#141414; }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       font-family:"Inter",system-ui,sans-serif;
@@ -17,7 +17,7 @@
       padding:24px; -webkit-font-smoothing:antialiased;
     }
     .card{
-      background:#fbf9f5; border:1px solid var(--line); border-radius:6px;
+      background:#ffffff; border:1px solid var(--line); border-radius:6px;
       max-width:440px; width:100%; padding:44px 40px; text-align:center;
     }
     .kicker{
@@ -77,9 +77,10 @@
   </div>
 
   <script>
-    // Pek på den kjørende demoen (scale-to-zero Cloud Run).
-    var DEMO_ORIGIN = "https://dm-b2j3i22sna-lz.a.run.app";
-    var DEMO_URL = DEMO_ORIGIN + "/demo/wahlberg";
+    // Chat-hjernen (widget-iframe + API) kjører på Cloud Run (scale-to-zero).
+    // Selve demo-siden ligger her på GitHub Pages under ./demo/.
+    var CHAT_ORIGIN = "https://dm-b2j3i22sna-lz.a.run.app";
+    var DEMO_URL = "./demo/";
 
     var btn = document.getElementById("startBtn");
     var prog = document.getElementById("progress");
@@ -94,7 +95,7 @@
       var done = false;
       function go() { if (!done) { done = true; window.location.href = DEMO_URL; } }
 
-      // Myk fremdriftslinje mens serveren varmer opp (indikativ, ikke eksakt).
+      // Myk fremdriftslinje mens Cloud Run varmer opp (indikativ, ikke eksakt).
       var pct = 0;
       var tick = setInterval(function () {
         pct = Math.min(pct + 4, 92);
@@ -102,14 +103,13 @@
         if (pct > 55) status.textContent = "Almost there…";
       }, 700);
 
-      // Varm opp serveren. no-cors: vi trenger ikke lese svaret, bare trigge
-      // kald start; fetch resolver når serveren har svart → da er den klar.
+      // Varm opp chat-backend-en. no-cors: vi trenger ikke lese svaret, bare
+      // trigge kald start; fetch resolver når serveren har svart → da er den klar.
       var t0 = Date.now();
-      fetch(DEMO_ORIGIN + "/health", { mode: "no-cors", cache: "no-store" })
+      fetch(CHAT_ORIGIN + "/health", { mode: "no-cors", cache: "no-store" })
         .then(function () {
           clearInterval(tick); bar.style.width = "100%";
           status.textContent = "Ready — opening the demo";
-          // liten pause så 100% vises, minst 900ms totalt
           setTimeout(go, Math.max(300, 900 - (Date.now() - t0)));
         })
         .catch(function () {
