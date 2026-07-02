@@ -43,15 +43,51 @@
     button:hover{background:#000}
     button:active{transform:scale(.98)}
     button:disabled{opacity:.7; cursor:default}
-    .progress{display:none; margin-top:22px}
-    .progress.show{display:block}
-    .bar{height:6px; background:var(--line); border-radius:99px; overflow:hidden}
-    .bar > i{
-      display:block; height:100%; width:0%; background:var(--brand);
-      border-radius:99px; transition:width .4s ease;
-    }
-    .status{font-size:13px; color:var(--muted); margin-top:12px}
     .foot{margin-top:26px; font-size:11px; color:#c2bcae}
+
+    /* --- Oppvarmings-overlay (popup) --- */
+    .overlay{
+      position:fixed; inset:0; z-index:50; display:none;
+      align-items:center; justify-content:center; padding:24px;
+      background:rgba(20,20,20,.42); backdrop-filter:blur(3px);
+    }
+    .overlay.show{display:flex}
+    .modal{
+      background:#fff; border:1px solid var(--line); border-radius:10px;
+      max-width:360px; width:100%; padding:40px 34px 34px; text-align:center;
+      box-shadow:0 24px 60px -18px rgba(0,0,0,.35);
+      animation:pop .25s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+    .ring{
+      position:relative; width:118px; height:118px; margin:0 auto 22px;
+      border-radius:50%;
+      background:conic-gradient(var(--brand) var(--deg,0deg), var(--line) 0deg);
+      transition:background .5s linear;
+    }
+    .ring::after{
+      content:""; position:absolute; inset:9px; border-radius:50%; background:#fff;
+    }
+    .ring .num{
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; z-index:1;
+    }
+    .ring .num b{
+      font-family:"Cormorant Garamond",serif; font-size:38px; font-weight:600;
+      line-height:1; color:var(--ink);
+    }
+    .ring .num span{
+      font-size:10px; letter-spacing:0.16em; text-transform:uppercase;
+      color:var(--muted); margin-top:4px;
+    }
+    .ring.done{ background:var(--brand); }
+    .ring.done .check{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      z-index:1; color:#fff;
+    }
+    .ring.done .check svg{width:44px;height:44px}
+    .m-title{font-size:16px; font-weight:600; margin-bottom:6px}
+    .m-status{font-size:13.5px; color:var(--muted); min-height:20px}
   </style>
 </head>
 <body>
@@ -61,19 +97,28 @@
     <p class="sub">AI customer service trained on your own store.</p>
 
     <div class="note">
-      This is a <b>live demo</b>. To avoid running servers around the clock, it
-      <b>sleeps when idle</b> and wakes on demand — so the first start takes about
-      <b>15–20 seconds</b>. After that it responds instantly.
+      This is a <b>live demo</b>. To keep costs down it <b>sleeps when idle</b> and
+      wakes on demand — so the first start takes about <b>15–20 seconds</b>. After
+      that it responds instantly.
     </div>
 
     <button id="startBtn">Start the demo</button>
 
-    <div class="progress" id="progress">
-      <div class="bar"><i id="bar"></i></div>
-      <div class="status" id="status">Waking up the demo…</div>
-    </div>
-
     <div class="foot">Powered by Dietrichs Marketing</div>
+  </div>
+
+  <!-- Oppvarmings-popup -->
+  <div class="overlay" id="overlay" role="dialog" aria-live="polite" aria-label="Starting the demo">
+    <div class="modal">
+      <div class="ring" id="ring">
+        <div class="num" id="num"><b id="count">20</b><span>seconds</span></div>
+        <div class="check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+      </div>
+      <div class="m-title" id="mTitle">Warming up the demo server</div>
+      <div class="m-status" id="mStatus">Waking the AI from sleep…</div>
+    </div>
   </div>
 
   <script>
@@ -81,43 +126,62 @@
     // Selve demo-siden ligger her på GitHub Pages under ./demo/.
     var CHAT_ORIGIN = "https://dm-b2j3i22sna-lz.a.run.app";
     var DEMO_URL = "./demo/";
+    var EST = 20;          // forventet kaldstart (sek) — kun for nedtellingen
+    var MAX_WAIT = 30000;  // hard sikkerhetsnett (ms)
 
     var btn = document.getElementById("startBtn");
-    var prog = document.getElementById("progress");
-    var bar = document.getElementById("bar");
-    var status = document.getElementById("status");
+    var overlay = document.getElementById("overlay");
+    var ring = document.getElementById("ring");
+    var num = document.getElementById("num");
+    var count = document.getElementById("count");
+    var mStatus = document.getElementById("mStatus");
+    var mTitle = document.getElementById("mTitle");
 
     btn.addEventListener("click", function () {
       btn.disabled = true;
       btn.textContent = "Starting…";
-      prog.classList.add("show");
+      overlay.classList.add("show");
 
+      var t0 = Date.now();
       var done = false;
+      var ready = false;
+
       function go() { if (!done) { done = true; window.location.href = DEMO_URL; } }
 
-      // Myk fremdriftslinje mens Cloud Run varmer opp (indikativ, ikke eksakt).
-      var pct = 0;
+      // Tikk hvert 100ms: fyll ringen etter forløpt tid, tell ned sekunder.
       var tick = setInterval(function () {
-        pct = Math.min(pct + 4, 92);
-        bar.style.width = pct + "%";
-        if (pct > 55) status.textContent = "Almost there…";
-      }, 700);
+        if (ready) return;
+        var elapsed = (Date.now() - t0) / 1000;
+        var frac = Math.min(elapsed / EST, 0.97);          // hold litt igjen til "ready"
+        ring.style.setProperty("--deg", (frac * 360) + "deg");
+        var remaining = Math.max(EST - Math.floor(elapsed), 1);
+        count.textContent = remaining;
+        if (elapsed >= EST) {
+          mStatus.textContent = "Almost ready — hang tight…";
+        } else if (elapsed > EST * 0.5) {
+          mStatus.textContent = "Loading the knowledge base…";
+        }
+      }, 100);
 
-      // Varm opp chat-backend-en. no-cors: vi trenger ikke lese svaret, bare
-      // trigge kald start; fetch resolver når serveren har svart → da er den klar.
-      var t0 = Date.now();
+      function finish() {
+        if (ready) return;
+        ready = true;
+        clearInterval(tick);
+        ring.style.setProperty("--deg", "360deg");
+        ring.classList.add("done");
+        mTitle.textContent = "Ready";
+        mStatus.textContent = "Opening the demo…";
+        setTimeout(go, 650);
+      }
+
+      // Varm opp Cloud Run. no-cors: vi trenger ikke lese svaret, bare vite at
+      // serveren har svart (da er init_app ferdig og demoen er varm).
       fetch(CHAT_ORIGIN + "/health", { mode: "no-cors", cache: "no-store" })
-        .then(function () {
-          clearInterval(tick); bar.style.width = "100%";
-          status.textContent = "Ready — opening the demo";
-          setTimeout(go, Math.max(300, 900 - (Date.now() - t0)));
-        })
-        .catch(function () {
-          clearInterval(tick); bar.style.width = "100%"; setTimeout(go, 400);
-        });
+        .then(finish)
+        .catch(finish);   // selv ved nettverksfeil: gå videre, iframen prøver igjen
 
-      // Sikkerhetsnett: gå videre uansett etter 25s.
-      setTimeout(function () { clearInterval(tick); go(); }, 25000);
+      // Sikkerhetsnett hvis /health aldri svarer.
+      setTimeout(finish, MAX_WAIT);
     });
   </script>
 </body>
