@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wåhlberg Archive — live demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{ --ink:#141414; --muted:#8a8578; --line:#e9e5dc; --cream:#f6f3ec; --brand:#141414; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:"Inter",system-ui,sans-serif;
+      color:var(--ink); background:var(--cream); line-height:1.6;
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      padding:24px; -webkit-font-smoothing:antialiased;
+    }
+    .card{
+      background:#fbf9f5; border:1px solid var(--line); border-radius:6px;
+      max-width:440px; width:100%; padding:44px 40px; text-align:center;
+    }
+    .kicker{
+      font-family:"SF Mono","JetBrains Mono",monospace; font-size:10.5px;
+      letter-spacing:0.16em; text-transform:uppercase; color:#c2bcae; margin-bottom:18px;
+    }
+    h1{
+      font-family:"Cormorant Garamond",serif; font-weight:600; font-size:32px;
+      letter-spacing:0.02em; line-height:1.1; margin-bottom:6px;
+    }
+    .sub{font-size:15px; color:var(--muted); margin-bottom:26px}
+    .note{
+      text-align:left; font-size:13.5px; color:var(--muted); background:var(--cream);
+      border:1px solid var(--line); border-radius:6px; padding:14px 16px; margin-bottom:26px;
+    }
+    .note b{color:var(--ink)}
+    button{
+      font-family:inherit; font-size:14px; font-weight:600; letter-spacing:0.08em;
+      text-transform:uppercase; cursor:pointer;
+      background:var(--ink); color:#fff; border:none; border-radius:3px;
+      padding:15px 28px; width:100%; transition:transform .15s, background .15s;
+    }
+    button:hover{background:#000}
+    button:active{transform:scale(.98)}
+    button:disabled{opacity:.7; cursor:default}
+    .progress{display:none; margin-top:22px}
+    .progress.show{display:block}
+    .bar{height:6px; background:var(--line); border-radius:99px; overflow:hidden}
+    .bar > i{
+      display:block; height:100%; width:0%; background:var(--brand);
+      border-radius:99px; transition:width .4s ease;
+    }
+    .status{font-size:13px; color:var(--muted); margin-top:12px}
+    .foot{margin-top:26px; font-size:11px; color:#c2bcae}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="kicker">Dietrichs Marketing · live demo</div>
+    <h1>Wåhlberg Archive</h1>
+    <p class="sub">AI customer service trained on your own store.</p>
+
+    <div class="note">
+      This is a <b>live demo</b>. To avoid running servers around the clock, it
+      <b>sleeps when idle</b> and wakes on demand — so the first start takes about
+      <b>15–20 seconds</b>. After that it responds instantly.
+    </div>
+
+    <button id="startBtn">Start the demo</button>
+
+    <div class="progress" id="progress">
+      <div class="bar"><i id="bar"></i></div>
+      <div class="status" id="status">Waking up the demo…</div>
+    </div>
+
+    <div class="foot">Powered by Dietrichs Marketing</div>
+  </div>
+
+  <script>
+    // Pek på den kjørende demoen (scale-to-zero Cloud Run).
+    var DEMO_ORIGIN = "https://dm-b2j3i22sna-lz.a.run.app";
+    var DEMO_URL = DEMO_ORIGIN + "/demo/wahlberg";
+
+    var btn = document.getElementById("startBtn");
+    var prog = document.getElementById("progress");
+    var bar = document.getElementById("bar");
+    var status = document.getElementById("status");
+
+    btn.addEventListener("click", function () {
+      btn.disabled = true;
+      btn.textContent = "Starting…";
+      prog.classList.add("show");
+
+      var done = false;
+      function go() { if (!done) { done = true; window.location.href = DEMO_URL; } }
+
+      // Myk fremdriftslinje mens serveren varmer opp (indikativ, ikke eksakt).
+      var pct = 0;
+      var tick = setInterval(function () {
+        pct = Math.min(pct + 4, 92);
+        bar.style.width = pct + "%";
+        if (pct > 55) status.textContent = "Almost there…";
+      }, 700);
+
+      // Varm opp serveren. no-cors: vi trenger ikke lese svaret, bare trigge
+      // kald start; fetch resolver når serveren har svart → da er den klar.
+      var t0 = Date.now();
+      fetch(DEMO_ORIGIN + "/health", { mode: "no-cors", cache: "no-store" })
+        .then(function () {
+          clearInterval(tick); bar.style.width = "100%";
+          status.textContent = "Ready — opening the demo";
+          // liten pause så 100% vises, minst 900ms totalt
+          setTimeout(go, Math.max(300, 900 - (Date.now() - t0)));
+        })
+        .catch(function () {
+          clearInterval(tick); bar.style.width = "100%"; setTimeout(go, 400);
+        });
+
+      // Sikkerhetsnett: gå videre uansett etter 25s.
+      setTimeout(function () { clearInterval(tick); go(); }, 25000);
+    });
+  </script>
+</body>
+</html>
